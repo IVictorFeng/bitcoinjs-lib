@@ -41,7 +41,7 @@ HDNode.fromSeedBuffer = function (seed, network) {
   // In case IL is 0 or >= n, the master key is invalid
   // This is handled by the ECPair constructor
   var pIL = BigInteger.fromBuffer(IL)
-  var keyPair = new ECPair(pIL, null, {
+  var keyPair = ECPair.fromPrivateKey(pIL, {
     network: network
   })
 
@@ -100,7 +100,7 @@ HDNode.fromBase58 = function (string, networks) {
     if (buffer.readUInt8(45) !== 0x00) throw new Error('Invalid private key')
 
     var d = BigInteger.fromBuffer(buffer.slice(46, 78))
-    keyPair = new ECPair(d, null, { network: network })
+    keyPair = ECPair.fromPrivateKey(d, { network: network })
 
   // 33 bytes: public key data (0x02 + X or 0x03 + X)
   } else {
@@ -111,7 +111,7 @@ HDNode.fromBase58 = function (string, networks) {
     // If not, the extended public key is invalid.
     curve.validate(Q)
 
-    keyPair = new ECPair(null, Q, { network: network })
+    keyPair = ECPair.fromPublicKey(Q, { network: network })
   }
 
   var hd = new HDNode(keyPair, chainCode)
@@ -143,7 +143,7 @@ HDNode.prototype.getPublicKeyBuffer = function () {
 }
 
 HDNode.prototype.neutered = function () {
-  var neuteredKeyPair = new ECPair(null, this.keyPair.Q, {
+  var neuteredKeyPair = ECPair.fromPublicKey(this.keyPair.Q, {
     network: this.keyPair.network
   })
 
@@ -248,7 +248,7 @@ HDNode.prototype.derive = function (index) {
       return this.derive(index + 1)
     }
 
-    derivedKeyPair = new ECPair(ki, null, {
+    derivedKeyPair = ECPair.fromPrivateKey(ki, {
       network: this.keyPair.network
     })
 
@@ -263,7 +263,7 @@ HDNode.prototype.derive = function (index) {
       return this.derive(index + 1)
     }
 
-    derivedKeyPair = new ECPair(null, Ki, {
+    derivedKeyPair = ECPair.fromPublicKey(Ki, {
       network: this.keyPair.network
     })
   }
